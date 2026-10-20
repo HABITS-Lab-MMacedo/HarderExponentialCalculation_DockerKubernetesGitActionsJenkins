@@ -2,6 +2,8 @@
 
 Let us learn how to use git, docker, kubernetes and GitHub actions.
 
+![Overview](Diagram.png)
+
 ## Level 0 - Git
 1. Create a repository: in the project folder run `git init`, then `git branch -M main`.
 2. Add a `.gitignore` for build output.
@@ -44,4 +46,5 @@ Run in your Windows terminal (PowerShell): `mkdir .github/workflows` then `Copy-
 4. Run the website tests: start `python3 server.py` in one terminal, then run `sh test-web.sh` in another. All tests should pass.
 5. Put `ci-website.yml` in `.github/workflows/`, commit and push. Open the Actions tab and find the second pipeline, `CI Website`. Does `CI Website` pass?
 6. Add a new check to `test-web.sh` (for example `check "3 ^ 4" "/calculate?base=3&exponent=4" "3 ^ 4 = 81"`), commit and push. Does `CI Website` still pass?
+
 
