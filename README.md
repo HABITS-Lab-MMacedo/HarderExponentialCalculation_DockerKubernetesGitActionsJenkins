@@ -28,3 +28,13 @@ Let us learn how to use git, docker, kubernetes, GitHub actions and jenkins.
 6. Run the CronJob: `kubectl apply -f CronJob.yaml`, wait 2 minutes, then `kubectl get jobs -A`.
 6. Run the CronJob: `kubectl create job expo-manual --from=cronjob/expo-cron`, `kubectl logs job/expo-manual`, then `kubectl get jobs -A`.
 7. Clean up: `kubectl delete -f Job.yaml -f Job-bad.yaml -f CronJob.yaml` or `kubectl delete job expo-manual` or `kubectl delete cronjob --all`. Now check `kubectl get jobs`.
+
+## Level 3 - GitHub Actions
+1. Put `ci.yml` in `.github/workflows/`. Run in your Mac terminal: `mkdir -p .github/workflows` then `cp ci.yml .github/workflows/`.
+Run in your Windows terminal (PowerShell): `mkdir .github/workflows` then `Copy-Item ci.yml .github/workflows/`. Then you can commit it, and push to `main` (the repo from Level 0).
+2. Open the Actions tab. Find the 4 jobs: lint, build-and-test, kubernetes-test, publish.
+3. Download the `build-output` artifact and open `test-results.txt`.
+4. Add a new test case to `test.sh` (for example `check "10 2" "10 ^ 2 = 100"`), commit, and push. 
+5. Break it on purpose: create the branch with `git checkout -b broken`, change `pow(...)` to `base * exponent`, commit, push the branch, and watch which job fails.
+6. Merge a fixed version back into `main` (`git checkout main`, `git merge broken` after fixing, or open a pull request) and check the package in the GitHub "Packages" section.
+
