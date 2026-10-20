@@ -10,3 +10,12 @@ Let us learn how to use git, docker, kubernetes, GitHub actions and jenkins.
 5. Push it: `git push -u origin main`. Refresh GitHub and confirm your files are there.
 6. From now on, commit after each level: `git add .`, `git commit -m "Finish level N"`, `git push`.
 
+
+## Level 1 - Docker
+1. Build the image: `docker build -t expo:1.0 .`
+2. Run it with `docker run --rm expo:1.0 2 10`. 
+3. Run `docker run --rm expo:1.0 abc 2`. 
+4. Check the image size: `docker images expo:1.0`. 
+5. Build with a version: `docker build --build-arg VERSION=1.1 -t expo:1.1 .`, then run `docker inspect expo:1.1` and find the `version` label.
+6. Run `bash test.sh` and make sure all tests pass.
+
