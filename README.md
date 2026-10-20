@@ -23,10 +23,11 @@ Let us learn how to use git, docker, kubernetes and GitHub actions.
 ## Level 2 - Kubernetes: you need to have the expo.c, Dockerfile, Job.yaml files to be able to run.
 1. `minikube start`, then `minikube image load expo:1.0`. It copies a Docker image from your computer into Minikube’s own image storage, so Kubernetes can use it.
 2. Run the good Job: `kubectl apply -f Job.yaml`, then `kubectl logs job/expo-job`
-3. Run the bad Job: `kubectl apply -f Job-bad.yaml`. Use `kubectl get jobs`. Which one shows `Failed`? expo-bad-job.
-4. Read why it failed: `kubectl logs job/expo-bad-job`
-5. Change the args in `Job.yaml` to `["5", "3"]`, delete the old Job `kubectl delete -f Job.yaml`, apply again.
-6. Run the CronJob: `kubectl apply -f CronJob.yaml`, wait 2 minutes, then `kubectl get jobs -A`.
+3. If your computer is Windows and you have an invalid issue, please delete the job first `kubectl delete -f Job.yaml` and rerun the step 2.
+4. Run the bad Job: `kubectl apply -f Job-bad.yaml`. Use `kubectl get jobs`. Which one shows `Failed`? expo-bad-job.
+5. Read why it failed: `kubectl logs job/expo-bad-job`
+6. Change the args in `Job.yaml` to `["5", "3"]`, delete the old Job `kubectl delete -f Job.yaml`, apply again.
+7. Run the CronJob: `kubectl apply -f CronJob.yaml`, wait 2 minutes, then `kubectl get jobs -A`.
 6. Run the CronJob: `kubectl create job expo-manual --from=cronjob/expo-cron`, `kubectl logs job/expo-manual`, then `kubectl get jobs -A`.
 7. Clean up: `kubectl delete -f Job.yaml -f Job-bad.yaml -f CronJob.yaml` or `kubectl delete job expo-manual` or `kubectl delete cronjob --all`. Now check `kubectl get jobs`.
 
