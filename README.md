@@ -19,3 +19,12 @@ Let us learn how to use git, docker, kubernetes, GitHub actions and jenkins.
 5. Build with a version: `docker build --build-arg VERSION=1.1 -t expo:1.1 .`, then run `docker inspect expo:1.1` and find the `version` label.
 6. Run `bash test.sh` and make sure all tests pass.
 
+## Level 2 - Kubernetes
+1. `minikube start`, then `minikube image load expo:1.0`. It copies a Docker image from your computer into Minikube’s own image storage, so Kubernetes can use it.
+2. Run the good Job: `kubectl apply -f Job.yaml`, then `kubectl logs job/expo-job`
+3. Run the bad Job: `kubectl apply -f Job-bad.yaml`. Use `kubectl get jobs`. Which one shows `Failed`? expo-bad-job.
+4. Read why it failed: `kubectl logs job/expo-bad-job`
+5. Change the args in `Job.yaml` to `["5", "3"]`, delete the old Job `kubectl delete -f Job.yaml`, apply again.
+6. Run the CronJob: `kubectl apply -f CronJob.yaml`, wait 2 minutes, then `kubectl get jobs -A`.
+6. Run the CronJob: `kubectl create job expo-manual --from=cronjob/expo-cron`, `kubectl logs job/expo-manual`, then `kubectl get jobs -A`.
+7. Clean up: `kubectl delete -f Job.yaml -f Job-bad.yaml -f CronJob.yaml` or `kubectl delete job expo-manual` or `kubectl delete cronjob --all`. Now check `kubectl get jobs`.
