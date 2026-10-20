@@ -1,4 +1,4 @@
-FROM gcc:latest AS build
+FROM gcc:14.2 AS build
 
 # Create the folder /app and work inside it.
 WORKDIR /app
