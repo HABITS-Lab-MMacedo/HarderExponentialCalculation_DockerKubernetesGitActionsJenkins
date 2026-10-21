@@ -68,4 +68,43 @@ Run in your Windows terminal (PowerShell): `mkdir .github/workflows` then `Copy-
 7. Put `ci-website.yml` in `.github/workflows/`, commit and push. Open the Actions tab and find the second pipeline, `CI Website`. Does `CI Website` pass?
 8. Add a new check to `test-web.sh` (for example `check "3 ^ 4" "/calculate?base=3&exponent=4" "3 ^ 4 = 81"`), commit and push. Does `CI Website` still pass?
 
+## Setup: a local Kubernetes cluster
 
+Level 2 needs a Kubernetes cluster running on your own computer. Kubernetes normally runs on many servers, so we use a small "mini" version that runs on one machine. You only need **one** of the options below. If one does not work on your computer, try the next one.
+
+| Option | What it is | Load the image? |
+|--------|-----------|-----------------|
+| **minikube** | A small cluster in a virtual machine or container | `minikube image load expo:1.0` |
+| **Docker Desktop** | A cluster built into Docker Desktop (Settings, Kubernetes, Enable) | Not needed |
+| **kind** | "Kubernetes in Docker": the cluster runs inside Docker containers | `kind load docker-image expo:1.0` |
+
+### Why do we load the image?
+
+`docker build` saves the image in your local Docker. Some clusters keep their own separate image storage and cannot see it. The load command copies the image in, so Kubernetes does not try to download `expo:1.0` from the internet and fail with `ErrImagePull`.
+
+### Installing kind
+
+kind needs **Docker Desktop to be open and running** (check with `docker ps`) and `kubectl` installed.
+
+- **Mac:** `brew install kind`
+- **Windows (PowerShell):** `winget install Kubernetes.kind`, then open a new PowerShell window.
+- **Linux:** follow the steps at https://kind.sigs.k8s.io/docs/user/quick-start/
+
+Check that it works:
+
+```
+kind version
+kind create cluster
+kubectl get nodes
+```
+
+The node should say `Ready`. The first `kind create cluster` takes a minute or two.
+
+To remove the cluster when you finish: `kind delete cluster`.
+
+### Common problems
+
+- **Cannot connect to the Docker daemon:** Docker Desktop is not running. Start it and try again.
+- **`kind: command not found`:** close the terminal and open a new one.
+- **`ErrImagePull` or `ImagePullBackOff` on a Pod:** the image is not in the cluster. Run the load command for your option again.
+- **`kubectl` talks to the wrong cluster:** check with `kubectl config current-context`. It should say `minikube`, `docker-desktop` or `kind-kind`. Change it with `kubectl config use-context <name>`.
