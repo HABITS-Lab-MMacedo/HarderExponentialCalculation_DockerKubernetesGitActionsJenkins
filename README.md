@@ -68,7 +68,78 @@ Run in your Windows terminal (PowerShell): `mkdir .github/workflows` then `Copy-
 7. Put `ci-website.yml` in `.github/workflows/`, commit and push. Open the Actions tab and find the second pipeline, `CI Website`. Does `CI Website` pass?
 8. Add a new check to `test-web.sh` (for example `check "3 ^ 4" "/calculate?base=3&exponent=4" "3 ^ 4 = 81"`), commit and push. Does `CI Website` still pass?
 
-## Setup: a local Kubernetes cluster
+## Setup: install the tools
+
+You need three tools for Levels 1 and 2. Install them once, in this order.
+
+| Tool | What it does | Used in |
+|------|--------------|---------|
+| **Docker** | Builds and runs the `expo` image | Level 1 |
+| **kubectl** | The command-line tool that talks to Kubernetes | Level 2 |
+| **minikube** | A small Kubernetes cluster on your own computer | Level 2 |
+
+### 1. Docker Desktop
+
+- **Mac:** `brew install --cask docker`, or download it from https://www.docker.com/products/docker-desktop/
+- **Windows:** `winget install Docker.DockerDesktop`, or download it from the same page. Docker Desktop on Windows uses WSL 2. If the installer asks you to enable it, accept and restart your computer.
+- **Linux:** follow https://docs.docker.com/engine/install/ for your distribution.
+
+Open Docker Desktop and wait until it says it is running. Then check:
+
+```
+docker --version
+docker run --rm hello-world
+```
+
+The second command prints "Hello from Docker!" when everything works.
+
+### 2. kubectl
+
+- **Mac:** `brew install kubectl`
+- **Windows:** `winget install Kubernetes.kubectl`
+- **Linux:** follow https://kubernetes.io/docs/tasks/tools/
+
+Docker Desktop may already include it. Check:
+
+```
+kubectl version --client
+```
+
+### 3. minikube
+
+- **Mac:** `brew install minikube`
+- **Windows:** `winget install Kubernetes.minikube`
+- **Linux:** follow https://minikube.sigs.k8s.io/docs/start/
+
+After installing, **close your terminal and open a new one**, so the new commands are found. Then start the cluster, using Docker as the engine:
+
+```
+minikube start --driver=docker
+kubectl get nodes
+```
+
+The node should say `Ready`. The first start takes a few minutes because it downloads files.
+
+### Check that everything works
+
+```
+docker --version
+kubectl version --client
+minikube status
+```
+
+If all three print a version or `Running`, you are ready for Level 1.
+
+### Common problems
+
+- **"Cannot connect to the Docker daemon":** Docker Desktop is not running. Open it and wait until it is ready.
+- **`command not found` or "not recognized":** close the terminal and open a new one. On Windows, a restart can also help.
+- **`minikube start` fails:** make sure Docker Desktop is running first, then try `minikube delete` followed by `minikube start --driver=docker`.
+- **Windows asks about WSL 2 or virtualization:** virtualization must be turned on in your computer's BIOS. Search for your computer model with "enable virtualization".
+- **Still not working:** try the alternatives in the next section (Docker Desktop's built-in Kubernetes or kind).
+
+
+## Setup: a local Kubernetes cluster (if minikube does not work on your computer)
 
 Level 2 needs a Kubernetes cluster running on your own computer. Kubernetes normally runs on many servers, so we use a small "mini" version that runs on one machine. You only need **one** of the options below. If one does not work on your computer, try the next one.
 
