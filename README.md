@@ -20,7 +20,7 @@ Let us learn how to use git, docker, kubernetes and GitHub actions.
 5. Build with a version: `docker build --build-arg VERSION=1.1 -t expo:1.1 .`, then run `docker inspect expo:1.1` and find the `version` label.
 6. Run `bash test.sh` and make sure all tests pass.
 
-## Level 2 - Kubernetes: you need to have the expo.c, Dockerfile, Job.yaml files to be able to run.
+## Level 2 - Minikube + Kubernetes: you need to have the expo.c, Dockerfile, Job.yaml files to be able to run.
 1. `minikube start`, then `minikube image load expo:1.0`. It copies a Docker image from your computer into Minikube’s own image storage, so Kubernetes can use it.
 2. Run the good Job: `kubectl apply -f Job.yaml`, then `kubectl logs job/expo-job`
 3. If your computer is Windows and you have an invalid issue, please delete the job first `kubectl delete -f Job.yaml` and rerun the step 2.
@@ -30,6 +30,24 @@ Let us learn how to use git, docker, kubernetes and GitHub actions.
 7. Run the CronJob: `kubectl apply -f CronJob.yaml`, wait 2 minutes, then `kubectl get jobs -A`.
 6. Run the CronJob: `kubectl create job expo-manual --from=cronjob/expo-cron`, `kubectl logs job/expo-manual`, then `kubectl get jobs -A`.
 7. Clean up: `kubectl delete -f Job.yaml -f Job-bad.yaml -f CronJob.yaml` or `kubectl delete job expo-manual` or `kubectl delete cronjob --all`. Now check `kubectl get jobs`.
+
+## Level 2 - Only using Kubernetes. You need these files to run this level: `expo.c`, `Dockerfile`, `Job.yaml`, `Job-bad.yaml` and `CronJob.yaml`.
+
+1. Build the image first (from Level 1): `docker build -t expo:1.0 .`
+2. Start a local Kubernetes cluster. Pick **one** option:
+   - **Docker Desktop** (if minikube does not work): open Settings, then Kubernetes, tick **Enable Kubernetes**, and wait until it says it is running. Then run `kubectl config use-context docker-desktop`. You do not need to load the image.
+   - **kind** (another alternative): `kind create cluster`, then `kind load docker-image expo:1.0`.
+3. Check that the cluster works: `kubectl get nodes`. The node should say `Ready`.
+4. Run the good Job: `kubectl apply -f Job.yaml`, then `kubectl logs job/expo-job`. You should see `2 ^ 10 = 1024`.
+   - If the logs say the container is still starting (`ContainerCreating`), wait a few seconds and run the logs command again.
+   - On Windows, if you get an "invalid" error, delete the Job first with `kubectl delete -f Job.yaml` and run this step again.
+5. Run the bad Job: `kubectl apply -f Job-bad.yaml`. Use `kubectl get jobs`. Which one shows `Failed`? `expo-bad-job`.
+6. Read why it failed: `kubectl logs job/expo-bad-job`
+7. Change the args in `Job.yaml` to `["5", "3"]`, delete the old Job with `kubectl delete -f Job.yaml`, then apply it again and read the new result with `kubectl logs job/expo-job`. (A Job cannot be edited after it is created, so it must be deleted first.)
+8. Run the CronJob: `kubectl apply -f CronJob.yaml`, then `kubectl get cronjob`. It creates a new Job every 10 minutes, so do not wait for it. Trigger one by hand instead:
+   `kubectl create job expo-manual --from=cronjob/expo-cron`
+9. Wait a few seconds, then read the result: `kubectl logs job/expo-manual`. Check all Jobs with `kubectl get jobs -A`.
+10. Clean up: `kubectl delete -f Job.yaml -f Job-bad.yaml -f CronJob.yaml`, then `kubectl delete job expo-manual`. Check that nothing is left with `kubectl get jobs`.
 
 ## Level 3 - GitHub Actions: you need to have the expo.c, Dockerfile, Job.yaml, ci.yml and test.sh files to be able to run.
 1. Put `ci.yml` in `.github/workflows/`. Run in your Mac terminal: `mkdir -p .github/workflows` then `cp ci.yml .github/workflows/`.
