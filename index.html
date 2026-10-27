@@ -74,7 +74,12 @@
 
       fetch(url)
         .then(function (response) { return response.json(); })
+        // {"ok": true, "output": "2 ^ 10 = 1024"}
         .then(function (data) {
+          // data.ok gives true
+          // data.output gives "2 ^ 10 = 1024"
+
+          // connect to where we want to update the result
           var result = document.getElementById("result");
           result.className = data.ok ? "" : "error";
 
