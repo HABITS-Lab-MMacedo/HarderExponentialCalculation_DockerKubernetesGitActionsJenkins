@@ -68,6 +68,37 @@ Run in your Windows terminal (PowerShell): `mkdir .github/workflows` then `Copy-
 7. Put `ci-website.yml` in `.github/workflows/`, commit and push. Open the Actions tab and find the second pipeline, `CI Website`. Does `CI Website` pass?
 8. Add a new check to `test-web.sh` (for example `check "3 ^ 4" "/calculate?base=3&exponent=4" "3 ^ 4 = 81"`), commit and push. Does `CI Website` still pass?
 
+
+## Level 5 - Monitoring: you need to have the expo.c, Dockerfile, server.py, index.html, prometheus.yml, alerts.yml, docker-compose.yml, the `grafana` folder, test-monitoring.sh and ci-monitoring.yml files to be able to run.
+
+Monitoring means watching a running program with numbers: is it up, how many requests, how many errors, how fast. Three tools work together:
+
+| Tool | What it does | Address |
+|------|--------------|---------|
+| **server.py** | Counts what it does and shows the numbers on a `/metrics` page | http://localhost:8000/metrics |
+| **Prometheus** | Visits `/metrics` every 5 seconds and stores the numbers | http://localhost:9090 |
+| **Grafana** | Draws the stored numbers as graphs | http://localhost:3000 |
+
+1. Make sure your image is built: `docker build -t expo:1.0 .`
+2. Start the website. This time it must listen to Docker too, so add `HOST=0.0.0.0`.
+   Mac / Linux: `HOST=0.0.0.0 python3 server.py`.
+   Windows (PowerShell): `$env:HOST="0.0.0.0"; python3 server.py`.
+3. Open `http://localhost:8000/metrics`. Calculate `2` and `10` on the website, then reload `/metrics`. Which number went up? (`expo_calculations_total` with `result="ok"`.) Now calculate `abc` and `2`. Which number goes up this time?
+4. In another terminal, start Prometheus and Grafana: `docker compose up -d`. The first start downloads the images, so it takes a minute. Check with `docker compose ps`.
+5. Open Prometheus at `http://localhost:9090`. Go to **Status**, then **Targets**. Is `expo-website` shown as `UP`? Stop `server.py` with Ctrl+C, wait 10 seconds, and reload. What does it show now? Start `server.py` again.
+6. In Prometheus, open **Graph** and type these queries, one at a time, then press **Execute**:
+   - `up`: 1 means "the website answers", 0 means "it does not".
+   - `expo_calculations_total`: the counters you saw in step 3.
+   - `rate(expo_calculations_total[1m])`: calculations per second over the last minute.
+   - `expo_calculation_seconds_sum / expo_calculation_seconds_count`: the average time of one calculation.
+7. Open Grafana at `http://localhost:3000`, then **Dashboards**, then **Expo Calculator**. Calculate a few numbers on the website, some good and some bad (for example `abc`). Watch the graph change after a few seconds.
+8. Open `http://localhost:9090/alerts`. Find `ExpoWebsiteDown`. Stop `server.py` and wait about 30 seconds. What colour does the alert have now? Start the server again and wait. Then trigger the other alert, `ExpoManyErrors`, by sending many bad calculations: `for i in $(seq 1 100); do curl -s "localhost:8000/calculate?base=abc&exponent=2" > /dev/null; done`. Does it fire?
+9. Run the monitoring tests: keep `server.py` running and run `sh test-monitoring.sh`. All tests should pass.
+10. Put `ci-monitoring.yml` in `.github/workflows/`. Run in your Mac terminal: `mkdir -p .github/workflows` then `cp ci-monitoring.yml .github/workflows/`. Commit and push. Open the Actions tab and find the third pipeline, `CI Monitoring`. Does it pass?
+11. Add a new alert to `alerts.yml` (for example, `ExpoSlow` when `expo_calculation_seconds_sum / expo_calculation_seconds_count > 1`). Run `docker compose restart prometheus` and look for it at `http://localhost:9090/alerts`. Then add a new check to `test-monitoring.sh` (for example `check "new alert is loaded" "$PROM/api/v1/rules" "ExpoSlow"`), commit and push. Does `CI Monitoring` still pass?
+12. Break it on purpose: in `prometheus.yml` change `scrape_interval: 5s` to `scrape_interval: 5` (no `s`), commit and push the `broken` branch. Which job fails? (The `lint` job: `promtool` finds the mistake before anything starts.)
+13. Clean up: stop the server with Ctrl+C, then `docker compose down`.
+
 ## Setup: install the tools
 
 You need three tools for Levels 1 and 2. Install them once, in this order.
