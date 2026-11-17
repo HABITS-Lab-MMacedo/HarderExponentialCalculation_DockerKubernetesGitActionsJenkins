@@ -29,8 +29,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+// If you have mac/unix use these
 #include <unistd.h>
 #include <sys/wait.h>
+
+// If you have windws use these
+// #include <io.h>
+// #include "wait.h"
 
 /* For the UNIT tests we need to call parse(), a private function inside expo.c.
    #include "expo.c" copies the whole file here, so we can call it.
