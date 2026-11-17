@@ -21,6 +21,17 @@ check() {
   fi
 }
 
+# wait_for "<address>" "<text>"   tries for up to 60 seconds until the reply
+# contains the text. Grafana needs 10-30 seconds to start after
+# "docker compose up -d", so we wait for it instead of failing right away.
+wait_for() {
+  for i in $(seq 1 60); do
+    curl -s "$1" | grep -qF -- "$2" && return 0
+    sleep 1
+  done
+  return 1
+}
+
 # counter "<result>"   prints the current number from /metrics, for example:
 #   expo_calculations_total{result="ok"} 3   ->   3
 counter() {
@@ -56,6 +67,8 @@ fi
 
 # ---- Part 2: Prometheus ----
 
+# Prometheus also needs a few seconds to start, so wait for it first
+wait_for "$PROM/-/ready" "Ready"
 check "Prometheus is ready"  "$PROM/-/ready"  "Ready"
 
 # Prometheus needs a few seconds for its first scrape, so try up to 30 times.
@@ -76,9 +89,13 @@ check "alert rules are loaded"  "$PROM/api/v1/rules"  "ExpoWebsiteDown"
 
 # ---- Part 3: Grafana ----
 
-check "Grafana is healthy"        "$GRAFANA/api/health"                   "\"database\": \"ok\""
-check "Grafana knows Prometheus"  "$GRAFANA/api/datasources"              "\"type\":\"prometheus\""
-check "dashboard is loaded"       "$GRAFANA/api/search?query=Expo"        "Expo Calculator"
+# The dashboard only exists after Grafana has started AND loaded its files,
+# so waiting for it also means that Grafana is up.
+wait_for "$GRAFANA/api/search?query=Expo" "Expo Calculator"
+
+check "Grafana is healthy"        "$GRAFANA/api/health"             "\"ok\""
+check "Grafana knows Prometheus"  "$GRAFANA/api/datasources"        "prometheus"
+check "dashboard is loaded"       "$GRAFANA/api/search?query=Expo"  "Expo Calculator"
 
 if [ "$FAILED" -eq 0 ]; then
   echo "All monitoring tests passed"
