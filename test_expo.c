@@ -175,7 +175,7 @@ static void test_system(void) {
 
 /* END TO END: the same whole application, but from the point of view of a PERSON doing
    the task they came for, from the first click to the answer, in a real browser.
-   A C program cannot click, so this is a MANUAL test: you do it, with your own eyes. */
+   A C program cannot click, so this is a MANUAL test: you do it, with your own eyes or with bash. */
 static void test_end_to_end(void) {
     heading("END TO END", "Can a PERSON do the whole task, from the first click to the answer?");
     skip("end-to-end", "open the page, press Calculate with 2 and 10, read 2 ^ 10 = 1024",
